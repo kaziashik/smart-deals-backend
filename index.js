@@ -5,10 +5,12 @@ const app = express();
 require('dotenv').config()
 const jwt = require('jsonwebtoken');
 const admin = require("firebase-admin");
+const { getAuth } = require('firebase-admin/auth');
 
 const { initializeApp, cert } = require('firebase-admin/app');
-const serviceAccount = require('./smart_deals_firebase_adminssdk.json');
-const { getAuth } = require('firebase-admin/auth');
+const decoded = Buffer.from(process.env.FIREBASE_SERVISE_KEY, "base64").toString("utf8");
+const serviceAccount = JSON.parse(decoded);
+
 // console.log("chekc file", serviceAccount);
 
 
@@ -151,6 +153,13 @@ async function run() {
 
         app.get('/latest-products', async (req, res) => {
             const cursor = productCollection.find().sort({ created_at: -1 }).limit(6);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
+
+         app.get('/allProducts', async (req, res) => {
+            const cursor = productCollection.find();
             const result = await cursor.toArray();
             res.send(result)
         })
@@ -302,7 +311,7 @@ async function run() {
         // Connect the client to the server	
         await client.connect();
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     }
